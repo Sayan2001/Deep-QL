@@ -1,0 +1,31 @@
+from modell import Agent
+import numpy as np
+import gym
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+if __name__ =='__main__':
+    tf.compat.v1.disable_eager_execution()
+    env=gym.make('LunarLander-v2')
+    lr=0.001
+    n_games=500
+    agent=Agent(gamma=0.99,epsilon=1.0,lr=lr,input_dims=env.observation_space.shape,n_actions=env.action_space.n,mem_size=1000000,batch_size=64,e_end=0.01)
+    scores=[]
+    eps_history=[]
+    for i in range(n_games):
+        done=False
+        score=0
+        observation=env.reset()
+        while not done:
+            
+            action=agent.choose_action(observation)
+            observation_,reward,done,info=env.step(action)
+            score+=reward
+            agent.store_transition(observation, action, score, observation_, done)
+            observation=observation_
+            agent.learn()
+        scores.append(score)
+        eps_history.append(i)
+        env.render()
+sns.lineplot(x=eps_history,y=scores)
